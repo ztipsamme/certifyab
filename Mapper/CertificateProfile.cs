@@ -13,7 +13,7 @@ namespace certifyAb.Mapper
         public CertificateProfile()
         {
             CreateMap<Certificate, CertificateDTO>();
-            CreateMap<Certificate, CertificateCreateDTO>();
+            CreateMap<Certificate, CertificateCreateDTO>().ReverseMap();
             CreateMap<Certificate, CertificateCreatedDTO>();
         }
     }

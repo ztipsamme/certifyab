@@ -7,9 +7,9 @@ namespace certifyAb.Core.Dto
 {
     public class CertificateBase
     {
-        public string Receiver { get; set; } = string.Empty;
+        public string Recipient { get; set; } = string.Empty;
         public string Course { get; set; } = string.Empty;
-        public DateOnly Date { get; set; }
+        public DateTime Date { get; set; }
     }
 
     public class CertificateDTO : CertificateBase

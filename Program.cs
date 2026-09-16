@@ -20,7 +20,5 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("certifyAbPolicy");
 
-var isDev = app.Environment.IsDevelopment();
-
-app.MapCertificateEndpoints(isDev);
+app.MapCertificateEndpoints();
 app.Run();

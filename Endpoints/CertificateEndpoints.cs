@@ -9,7 +9,7 @@ namespace certifyAb.Endpoints
 {
     public static class CertificateEndpoints
     {
-        public static void MapCertificateEndpoints(this WebApplication app, bool isDev)
+        public static void MapCertificateEndpoints(this WebApplication app)
         {
             // Skapa certifikat (mottagare, kurs, datum), returnera ID + URL
             app.MapPost("/certificates", async (HttpRequest req, ICertificateService _service) =>
@@ -21,9 +21,9 @@ namespace certifyAb.Endpoints
                     if (dto is null)
                         return Results.BadRequest("Request body is required.");
 
-                    var certificate = await _service.Create(dto);
+                    var certificate = await _service.CreateAsync(dto);
 
-                    return Results.Created();
+                    return Results.Created($"/certificates/{certificate.Id}", certificate);
                 }
                 catch (Exception ex)
                 {
@@ -45,9 +45,18 @@ namespace certifyAb.Endpoints
 
 
             // Lista alla certifikat (kräver API-nyckel i header)
-            app.MapGet("/certificates", () =>
+            app.MapGet("/certificates", async (HttpRequest req, ICertificateService _service) =>
             {
-                throw new NotImplementedException();
+                try
+                {
+                    var certificates = await _service.GetAllAsync();
+
+                    return Results.Ok(certificates);
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem(detail: ex.ToString(), statusCode: 500);
+                }
             })
             .WithName("Get All Certificates")
             .WithSummary("Get all certificates as a list.");

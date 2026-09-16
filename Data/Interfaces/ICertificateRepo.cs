@@ -8,6 +8,7 @@ namespace certifyab.Data.Interfaces
 {
     public interface ICertificateRepo
     {
-        public Task<Certificate> Create(Certificate certificate);
+        Task<Certificate> CreateAsync(Certificate certificate);
+        Task<List<Certificate>> GetAllAsync();
     }
 }

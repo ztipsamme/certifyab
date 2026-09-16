@@ -8,6 +8,7 @@ namespace certifyab.Core.Interfaces
 {
     public interface ICertificateService
     {
-        public Task<CertificateCreatedDTO> Create(CertificateCreateDTO certificate);
+        Task<CertificateCreatedDTO> CreateAsync(CertificateCreateDTO certificate);
+        Task<List<CertificateDTO>> GetAllAsync();
     }
 }

@@ -11,17 +11,20 @@ namespace certifyAb.Core.Services
     {
         private readonly ICertificateRepo _repo;
         private readonly IMapper _mapper;
+        private readonly bool _isDev;
         private readonly string _url = "";
 
-        public CertificateService(ICertificateRepo repo, IMapper mapper)
+        public CertificateService(IConfiguration config, ICertificateRepo repo, IMapper mapper, IHostEnvironment environment)
         {
             _repo = repo;
             _mapper = mapper;
+            _isDev = environment.IsDevelopment();
+            _url = config["Azure:ApiUrl"]!;
         }
 
-        public async Task<CertificateCreatedDTO> Create(CertificateCreateDTO certificate)
+        public async Task<CertificateCreatedDTO> CreateAsync(CertificateCreateDTO certificate)
         {
-            var savedCertificate = await _repo.Create(
+            var savedCertificate = await _repo.CreateAsync(
                 _mapper.Map<Certificate>(certificate));
 
             var dto = _mapper.Map<CertificateCreatedDTO>(savedCertificate);
@@ -30,5 +33,19 @@ namespace certifyAb.Core.Services
             return dto;
         }
 
+        public async Task<List<CertificateDTO>> GetAllAsync()
+        {
+            var certificates = await _repo.GetAllAsync();
+
+            var dtos = _mapper.Map<List<CertificateDTO>>(certificates);
+
+            if (_isDev)
+            {
+                foreach (var mockDto in dtos)
+                    mockDto.Url = mockDto.Url = $"{_url}/verify/{mockDto.Id}";
+            }
+
+            return dtos;
+        }
     }
 }
