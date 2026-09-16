@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -67,6 +68,25 @@ namespace certifyab.Data.Repos
             return certificate;
         }
 
+        public async Task<Certificate?> GetByIdAsync(string id)
+        {
+            if (_isDev)
+                return MockData.MockCertificates.Certificates.FirstOrDefault(c => c.Id == id);
+
+            await foreach (BlobItem blobItem in _container.GetBlobsAsync(new GetBlobsOptions
+            {
+                Traits = BlobTraits.Metadata
+            }))
+            {
+                if (!blobItem.Metadata.TryGetValue("Id", out var blobId) || blobId != id)
+                    continue;
+
+                var certificate = await GetCertificateContentAsync(blobItem);
+            }
+
+            return null;
+        }
+
         public async Task<List<Certificate>> GetAllAsync()
         {
             var certificates = new List<Certificate>();
@@ -78,9 +98,7 @@ namespace certifyab.Data.Repos
                 Traits = BlobTraits.Metadata
             }))
             {
-                var blob = _container.GetBlobClient(blobItem.Name);
-                var response = await blob.DownloadContentAsync();
-                var certificate = response.Value.Content.ToObjectFromJson<Certificate>();
+                var certificate = await GetCertificateContentAsync(blobItem);
 
                 if (certificate != null)
                 {
@@ -89,6 +107,15 @@ namespace certifyab.Data.Repos
             }
 
             return certificates;
+        }
+
+        private async Task<Certificate?> GetCertificateContentAsync(BlobItem blobItem)
+        {
+            var blob = _container.GetBlobClient(blobItem.Name);
+            var response = await blob.DownloadContentAsync();
+            var certificate = response.Value.Content.ToObjectFromJson<Certificate>();
+
+            return certificate;
         }
     }
 }

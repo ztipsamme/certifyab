@@ -2,6 +2,7 @@ using System;
 using AutoMapper;
 using certifyab.Core.Interfaces;
 using certifyab.Data.Interfaces;
+using certifyab.Data.MockData;
 using certifyAb.Core.Dto;
 using certifyAb.Data.Entities;
 
@@ -28,7 +29,27 @@ namespace certifyAb.Core.Services
                 _mapper.Map<Certificate>(certificate));
 
             var dto = _mapper.Map<CertificateCreatedDTO>(savedCertificate);
-            dto.Url = $"{_url}/verify/{savedCertificate.Id}";
+            dto.Url = SetUrl(dto.Id);
+
+            return dto;
+        }
+
+        public async Task<CertificateDTO> GetByIdAsync(string id)
+        {
+            var certificate = await _repo.GetByIdAsync(id);
+
+            if (_isDev)
+            {
+                var mockCertificate = MockCertificates.Certificates.FirstOrDefault(c => c.Id == id);
+
+                var mockDto = _mapper.Map<CertificateDTO>(mockCertificate);
+                mockDto.Url = SetUrl(mockDto.Id);
+
+                return mockDto;
+            }
+
+            var dto = _mapper.Map<CertificateDTO>(certificate);
+            dto.Url = SetUrl(dto.Id);
 
             return dto;
         }
@@ -42,10 +63,13 @@ namespace certifyAb.Core.Services
             if (_isDev)
             {
                 foreach (var mockDto in dtos)
-                    mockDto.Url = mockDto.Url = $"{_url}/verify/{mockDto.Id}";
+                    mockDto.Url = SetUrl(mockDto.Id);
             }
 
             return dtos;
         }
+
+        private string SetUrl(string id) => $"{_url}/verify/{id}";
+
     }
 }

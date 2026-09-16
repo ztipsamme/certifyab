@@ -36,16 +36,24 @@ namespace certifyAb.Endpoints
 
 
             // Hämta certifikatdata (JSON)
-            app.MapGet("/certificates/{id}", () =>
+            app.MapGet("/certificates/{id}", async (string id, ICertificateService _service) =>
             {
-                throw new NotImplementedException();
+                try
+                {
+                    var certificate = await _service.GetByIdAsync(id);
+                    return Results.Ok(certificate);
+                }
+                catch
+                {
+                    return Results.NotFound();
+                }
             })
             .WithName("Get Certificate By Id")
             .WithSummary("Get a certificate by Id.");
 
 
             // Lista alla certifikat (kräver API-nyckel i header)
-            app.MapGet("/certificates", async (HttpRequest req, ICertificateService _service) =>
+            app.MapGet("/certificates", async (ICertificateService _service) =>
             {
                 try
                 {
