@@ -1,6 +1,0 @@
-@certifyab_HostAddress = http://localhost:5082
-
-GET {{certifyab_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
