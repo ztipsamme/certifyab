@@ -32,7 +32,10 @@ namespace certifyAb.Endpoints
 
             })
             .WithName("Create Certificate")
-            .WithSummary("Create a certificate – requires receiver, course and date. Returns Id and Url.");
+            .WithSummary("Create a new certificate")
+            .WithTags("Certificates")
+            .Produces<CertificateCreatedDTO>(StatusCodes.Status201Created)
+            .Produces<string>(StatusCodes.Status400BadRequest);
 
 
             // Hämta certifikatdata (JSON)
@@ -49,7 +52,10 @@ namespace certifyAb.Endpoints
                 }
             })
             .WithName("Get Certificate By Id")
-            .WithSummary("Get a certificate by Id.");
+            .WithSummary("Get a certificate by Id.")
+            .WithTags("Certificates")
+            .Produces<List<CertificateDTO>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
 
 
             // Lista alla certifikat (kräver API-nyckel i header)
@@ -67,7 +73,10 @@ namespace certifyAb.Endpoints
                 }
             })
             .WithName("Get All Certificates")
-            .WithSummary("Get all certificates as a list.");
+            .WithSummary("Get all certificates as a list.")
+            .WithTags("Certificates")
+            .Produces<CertificateDTO>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status500InternalServerError);
 
             // Publik verifierings-endpoint — returnerar äkthetsbevis
             app.MapGet("/verify/{uuid}", async (string uuid, ICertificateService _service) =>
@@ -83,16 +92,18 @@ namespace certifyAb.Endpoints
                 }
             })
             .WithName("Get Certificate Of Authenticity")
-            .WithSummary("Returns Certificate Of Authenticity for the selected certificate.");
+            .WithSummary("Returns Certificate Of Authenticity for the selected certificate.")
+            .WithTags("Certificates")
+            .Produces<CertificatePublicDTO>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
 
 
             // Health check
-            app.MapGet("/health", () =>
-            {
-                throw new NotImplementedException();
-            })
+            app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
             .WithName("Get Health Check")
-            .WithSummary("Returns a Health Check.");
+            .WithSummary("Returns a Health Check.")
+            .WithTags("Health")
+            .Produces<string>(StatusCodes.Status200OK);
         }
     }
 }
