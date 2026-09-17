@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using certifyab.Core.Interfaces;
+using certifyab.Extensions;
 using certifyAb.Core.Dto;
 
 namespace certifyAb.Endpoints
@@ -34,6 +35,7 @@ namespace certifyAb.Endpoints
             .WithName("Create Certificate")
             .WithSummary("Create a new certificate")
             .WithTags("Certificates")
+            .RequireApiKey()
             .Produces<CertificateCreatedDTO>(StatusCodes.Status201Created)
             .Produces<string>(StatusCodes.Status400BadRequest);
 
@@ -54,12 +56,13 @@ namespace certifyAb.Endpoints
             .WithName("Get Certificate By Id")
             .WithSummary("Get a certificate by Id.")
             .WithTags("Certificates")
-            .Produces<List<CertificateDTO>>(StatusCodes.Status200OK)
+            .RequireApiKey()
+            .Produces<CertificateDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
 
             // Lista alla certifikat (kräver API-nyckel i header)
-            app.MapGet("/certificates", async (ICertificateService _service) =>
+            app.MapGet("/certificates", async (HttpRequest req, ICertificateService _service, IConfiguration config) =>
             {
                 try
                 {
@@ -75,27 +78,29 @@ namespace certifyAb.Endpoints
             .WithName("Get All Certificates")
             .WithSummary("Get all certificates as a list.")
             .WithTags("Certificates")
-            .Produces<CertificateDTO>(StatusCodes.Status200OK)
+            .RequireApiKey()
+            .Produces<List<CertificateDTO>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status500InternalServerError);
 
             // Publik verifierings-endpoint — returnerar äkthetsbevis
             app.MapGet("/verify/{uuid}", async (string uuid, ICertificateService _service) =>
-            {
-                try
                 {
-                    var certificate = await _service.GetByUuidAsync(uuid);
-                    return Results.Ok(certificate);
-                }
-                catch
-                {
-                    return Results.NotFound();
-                }
-            })
-            .WithName("Get Certificate Of Authenticity")
-            .WithSummary("Returns Certificate Of Authenticity for the selected certificate.")
-            .WithTags("Certificates")
-            .Produces<CertificatePublicDTO>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
+                    try
+                    {
+                        var certificate = await _service.GetByUuidAsync(uuid);
+                        return Results.Ok(certificate);
+                    }
+                    catch
+                    {
+                        return Results.NotFound();
+                    }
+                })
+                .WithName("Get Certificate Of Authenticity")
+                .WithSummary("Returns Certificate Of Authenticity for the selected certificate.")
+                .WithTags("Certificates")
+                .Produces<CertificatePublicDTO>(StatusCodes.Status200OK)
+                .Produces(StatusCodes.Status404NotFound);
 
 
             // Health check

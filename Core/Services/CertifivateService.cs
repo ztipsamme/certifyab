@@ -20,7 +20,7 @@ namespace certifyAb.Core.Services
             _repo = repo;
             _mapper = mapper;
             _isDev = environment.IsDevelopment();
-            _url = config["Azure:ApiUrl"]!;
+            _url = config["ApiUrl"]!;
         }
 
         public async Task<CertificateCreatedDTO> CreateAsync(CertificateCreateDTO certificate)
