@@ -39,6 +39,7 @@ namespace certifyab.Data.Repos
         public async Task<Certificate> CreateAsync(Certificate certificate)
         {
             certificate.Id = Guid.NewGuid().ToString();
+            certificate.Uuid = Guid.NewGuid().ToString();
 
             if (_isDev)
             {
@@ -107,6 +108,25 @@ namespace certifyab.Data.Repos
             }
 
             return certificates;
+        }
+
+        public async Task<Certificate?> GetByUuidAsync(string uuid)
+        {
+            if (_isDev)
+                return MockData.MockCertificates.Certificates.FirstOrDefault(c => c.Uuid == uuid);
+
+            await foreach (BlobItem blobItem in _container.GetBlobsAsync(new GetBlobsOptions
+            {
+                Traits = BlobTraits.Metadata
+            }))
+            {
+                if (!blobItem.Metadata.TryGetValue("Uuid", out var blobId) || blobId != uuid)
+                    continue;
+
+                var certificate = await GetCertificateContentAsync(blobItem);
+            }
+
+            return null;
         }
 
         private async Task<Certificate?> GetCertificateContentAsync(BlobItem blobItem)

@@ -29,7 +29,7 @@ namespace certifyAb.Core.Services
                 _mapper.Map<Certificate>(certificate));
 
             var dto = _mapper.Map<CertificateCreatedDTO>(savedCertificate);
-            dto.Url = SetUrl(dto.Id);
+            dto.Url = SetUrl(dto.Uuid);
 
             return dto;
         }
@@ -40,16 +40,15 @@ namespace certifyAb.Core.Services
 
             if (_isDev)
             {
-                var mockCertificate = MockCertificates.Certificates.FirstOrDefault(c => c.Id == id);
+                var mockCertificate = FindMockCertificate(id);
 
                 var mockDto = _mapper.Map<CertificateDTO>(mockCertificate);
-                mockDto.Url = SetUrl(mockDto.Id);
+                mockDto.Url = SetUrl(mockDto.Uuid);
 
                 return mockDto;
             }
 
-            var dto = _mapper.Map<CertificateDTO>(certificate);
-            dto.Url = SetUrl(dto.Id);
+            var dto = MapToCertificateDTO(certificate);
 
             return dto;
         }
@@ -63,13 +62,41 @@ namespace certifyAb.Core.Services
             if (_isDev)
             {
                 foreach (var mockDto in dtos)
-                    mockDto.Url = SetUrl(mockDto.Id);
+                    mockDto.Url = SetUrl(mockDto.Uuid);
             }
 
             return dtos;
         }
 
-        private string SetUrl(string id) => $"{_url}/verify/{id}";
+        public async Task<CertificateDTO> ValidateByUuidAsync(string uuid)
+        {
+            var certificate = await _repo.GetByUuidAsync(uuid);
+
+            if (_isDev)
+            {
+                var mockCertificate = FindMockCertificate(uuid);
+                var mockDto = MapToCertificateDTO(mockCertificate);
+
+                return mockDto;
+            }
+
+            var dto = MapToCertificateDTO(certificate);
+
+            return dto;
+        }
+
+        private string SetUrl(string Uuid) => $"{_url}/verify/{Uuid}";
+
+        private Certificate? FindMockCertificate(string idOrUuid) =>
+            MockCertificates.Certificates.FirstOrDefault(c => c.Id == idOrUuid || c.Uuid == idOrUuid);
+
+        private CertificateDTO MapToCertificateDTO(Certificate? certificate)
+        {
+            var dto = _mapper.Map<CertificateDTO>(certificate);
+            dto.Url = SetUrl(dto.Uuid);
+
+            return dto;
+        }
 
     }
 }

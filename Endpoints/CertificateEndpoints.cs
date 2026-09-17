@@ -70,9 +70,17 @@ namespace certifyAb.Endpoints
             .WithSummary("Get all certificates as a list.");
 
             // Publik verifierings-endpoint — returnerar äkthetsbevis
-            app.MapGet("/verify/{uuid}", () =>
+            app.MapGet("/verify/{uuid}", async (string uuid, ICertificateService _service) =>
             {
-                throw new NotImplementedException();
+                try
+                {
+                    var certificate = await _service.ValidateByUuidAsync(uuid);
+                    return Results.Ok(certificate);
+                }
+                catch
+                {
+                    return Results.NotFound();
+                }
             })
             .WithName("Get Certificate Of Authenticity")
             .WithSummary("Returns Certificate Of Authenticity for the selected certificate.");
