@@ -15,6 +15,7 @@ namespace certifyAb.Mapper
             CreateMap<Certificate, CertificateDTO>();
             CreateMap<Certificate, CertificateCreateDTO>().ReverseMap();
             CreateMap<Certificate, CertificateCreatedDTO>();
+            CreateMap<Certificate, CertificatePublicDTO>();
         }
     }
 }

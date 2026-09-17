@@ -11,6 +11,6 @@ namespace certifyab.Core.Interfaces
         Task<CertificateCreatedDTO> CreateAsync(CertificateCreateDTO certificate);
         Task<CertificateDTO> GetByIdAsync(string id);
         Task<List<CertificateDTO>> GetAllAsync();
-        Task<CertificateDTO> ValidateByUuidAsync(string uuid);
+        Task<CertificatePublicDTO> GetByUuidAsync(string uuid);
     }
 }

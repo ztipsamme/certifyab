@@ -74,7 +74,7 @@ namespace certifyAb.Endpoints
             {
                 try
                 {
-                    var certificate = await _service.ValidateByUuidAsync(uuid);
+                    var certificate = await _service.GetByUuidAsync(uuid);
                     return Results.Ok(certificate);
                 }
                 catch

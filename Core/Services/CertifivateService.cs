@@ -68,19 +68,19 @@ namespace certifyAb.Core.Services
             return dtos;
         }
 
-        public async Task<CertificateDTO> ValidateByUuidAsync(string uuid)
+        public async Task<CertificatePublicDTO> GetByUuidAsync(string uuid)
         {
             var certificate = await _repo.GetByUuidAsync(uuid);
 
             if (_isDev)
             {
                 var mockCertificate = FindMockCertificate(uuid);
-                var mockDto = MapToCertificateDTO(mockCertificate);
+                var mockDto = MapToCertificatePublicDTO(mockCertificate);
 
                 return mockDto;
             }
 
-            var dto = MapToCertificateDTO(certificate);
+            var dto = MapToCertificatePublicDTO(certificate);
 
             return dto;
         }
@@ -93,6 +93,14 @@ namespace certifyAb.Core.Services
         private CertificateDTO MapToCertificateDTO(Certificate? certificate)
         {
             var dto = _mapper.Map<CertificateDTO>(certificate);
+            dto.Url = SetUrl(dto.Uuid);
+
+            return dto;
+        }
+
+        private CertificatePublicDTO MapToCertificatePublicDTO(Certificate? certificate)
+        {
+            var dto = _mapper.Map<CertificatePublicDTO>(certificate);
             dto.Url = SetUrl(dto.Uuid);
 
             return dto;

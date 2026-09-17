@@ -27,7 +27,7 @@ namespace certifyAb.Core.Dto
 
     public class CertificatePublicDTO : CertificateBase
     {
-        public string Id { get; set; } = string.Empty;
+        public string Uuid { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
     };
 

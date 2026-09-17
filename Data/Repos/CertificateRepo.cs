@@ -47,7 +47,7 @@ namespace certifyab.Data.Repos
                 return certificate;
             }
 
-            var blobName = $"{certificate.Id}.json";
+            var blobName = $"{certificate.Uuid}.json";
             var blob = _container.GetBlobClient(blobName);
 
             var metadata = new Dictionary<string, string>
