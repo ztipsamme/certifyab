@@ -53,6 +53,7 @@ namespace certifyab.Data.Repos
             var metadata = new Dictionary<string, string>
             {
                 ["Id"] = certificate.Id,
+                ["Uuid"] = certificate.Uuid,
             };
 
             var json = BinaryData.FromObjectAsJson(certificate);
