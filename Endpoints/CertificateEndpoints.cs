@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using certifyab.Core.Interfaces;
 using certifyab.Extensions;
-using certifyAb.Core.Dto;
+using certifyab.Core.Dto;
 
-namespace certifyAb.Endpoints
+namespace certifyab.Endpoints
 {
     public static class CertificateEndpoints
     {

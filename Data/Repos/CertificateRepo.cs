@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using certifyab.Data.Interfaces;
-using certifyAb.Data.Entities;
+using certifyab.Data.Entities;
 
 namespace certifyab.Data.Repos
 {

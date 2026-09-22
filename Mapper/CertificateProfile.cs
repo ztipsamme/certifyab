@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
-using certifyAb.Core.Dto;
-using certifyAb.Data.Entities;
+using certifyab.Core.Dto;
+using certifyab.Data.Entities;
 
-namespace certifyAb.Mapper
+namespace certifyab.Mapper
 {
     public class CertificateProfile : Profile
     {
