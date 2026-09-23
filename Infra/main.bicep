@@ -2,6 +2,8 @@ param projectName string
 param location string = resourceGroup().location
 param storageAccountName string
 param containerRegistryName string
+param deployContainerApp bool
+param containerImage string = ''
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
   name: storageAccountName
@@ -49,6 +51,63 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2026-01-01'
         sharedKey: logAnalytics.listKeys().primarySharedKey
       }
     }
+  }
+}
+
+resource containerApp 'Microsoft.App/containerApps@2026-01-01' = if (deployContainerApp) {
+  name: 'ca-${projectName}'
+  location: location
+  identity: { type: 'SystemAssigned' }
+  properties: {
+    managedEnvironmentId: containerAppsEnvironment.id
+    configuration: {
+      ingress: {
+        external: true
+        targetPort: 8080
+        transport: 'http'
+      }
+      registries: [
+        {
+          server: containerRegistry.properties.loginServer
+          identity: 'system'
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: projectName
+          image: containerImage
+          resources: {
+            cpu: 1
+            memory: '2Gi'
+          }
+          env: [
+            {
+              name: 'ASPNETCORE_URLS'
+              value: 'http://+:8080'
+            }
+          ]
+        }
+      ]
+      scale: {
+        minReplicas: 2
+        maxReplicas: 3
+      }
+    }
+  }
+}
+
+resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployContainerApp) {
+  name: guid(containerRegistry.id, containerApp.id, 'acrpull')
+  scope: containerRegistry
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+    )
+    principalId: containerApp!.identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
