@@ -5,6 +5,9 @@ param containerRegistryName string
 param deployContainerApp bool
 param containerImage string = ''
 
+@secure()
+param apiKey string = ''
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
   name: storageAccountName
   location: location
@@ -61,6 +64,12 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = if (deployConta
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
+      secrets: [
+        {
+          name: 'api-key'
+          value: apiKey
+        }
+      ]
       ingress: {
         external: true
         targetPort: 8080
@@ -87,6 +96,14 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = if (deployConta
               name: 'ASPNETCORE_URLS'
               value: 'http://+:8080'
             }
+            {
+              name: 'ApiKey'
+              secretRef: 'api-key'
+            }
+            {
+              name: 'Storage__AccountUrl'
+              value: 'https://${storageAccount.name}.${environment().suffixes.storage}'
+            }
           ]
         }
       ]
@@ -107,6 +124,23 @@ resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (
       '7f951dda-4ed3-4680-a7ca-43fe172d538d'
     )
     principalId: containerApp!.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployContainerApp) {
+  name: guid(storageAccount.id, containerApp.id, 'storageblobcontributor')
+
+  scope: storageAccount
+
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+    )
+
+    principalId: containerApp!.identity.principalId
+
     principalType: 'ServicePrincipal'
   }
 }

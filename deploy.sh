@@ -7,6 +7,23 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+echo
+echo "Reading API key from .NET User Secrets..."
+
+API_KEY=$(dotnet user-secrets list | grep '^ApiKey' | sed 's/ApiKey = //')
+
+if [ -z "$API_KEY" ]; then
+  echo "ERROR: ApiKey not found in User Secrets."
+  exit 1
+fi
+
+echo "API key found."
+echo
+
+
+echo "Setting variables..."
+echo
+
 RG="$1"
 NEW_VERSION="v1"
 PROJECT_NAME="certifyab"
@@ -28,7 +45,7 @@ echo
 az deployment group what-if \
   --resource-group $RG \
   --parameters infra/main.bicepparam \
-  --parameters deployContainerApp=false
+  --parameters deployContainerApp=false \
 
 echo
 
@@ -49,8 +66,7 @@ az deployment group create \
   --resource-group $RG \
   --parameters infra/main.bicepparam \
   --parameters deployContainerApp=false \
-  --parameters containerImage="$PLACEHOLDER_IMAGE"
-
+  --parameters containerImage="$PLACEHOLDER_IMAGE" \
 
 # Build Docker image
 echo
@@ -88,19 +104,20 @@ echo
 echo "Creating Container App..."
 
 az deployment group create \
- --resource-group "$RG" \
- --parameters infra/main.bicepparam \
- --parameters deployContainerApp=true \
- --parameters containerImage="$ACR_IMAGE"
+  --resource-group "$RG" \
+  --parameters infra/main.bicepparam \
+  --parameters deployContainerApp=true \
+  --parameters containerImage="$ACR_IMAGE" \
+  --parameters apiKey="$API_KEY"
 
 
-echo echo "Checking Container App..."
+echo "Checking Container App..."
 
 az containerapp show \
- --name "ca-$PROJECT_NAME" \
- --resource-group "$RG" \
- --query "{status:properties.runningStatus, provisioning:properties.provisioningState, revision:properties.latestReadyRevisionName, fqdn:properties.latestRevisionFqdn}" \
- -o table
+  --name "ca-$PROJECT_NAME" \
+  --resource-group "$RG" \
+  --query "{status:properties.runningStatus, provisioning:properties.provisioningState, revision:properties.latestReadyRevisionName, fqdn:properties.latestRevisionFqdn}" \
+  -o table
 
 echo
 echo "Deployment complete."
