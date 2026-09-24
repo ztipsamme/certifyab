@@ -102,7 +102,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = if (deployConta
             }
             {
               name: 'Storage__AccountUrl'
-              value: 'https://${storageAccount.name}.${environment().suffixes.storage}'
+              value: 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
             }
           ]
         }
@@ -146,5 +146,5 @@ resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@202
 }
 
 output storageAccountName string = storageAccount.name
-output storageAccountUrl string = 'https://${storageAccount.name}.${environment().suffixes.storage}'
+output storageAccountUrl string = 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
 output containerRegistryLoginServer string = containerRegistry.properties.loginServer
