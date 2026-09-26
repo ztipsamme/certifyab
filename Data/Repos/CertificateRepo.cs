@@ -77,7 +77,8 @@ namespace certifyab.Data.Repos
                 if (!blobItem.Metadata.TryGetValue("Id", out var blobId) || blobId != id)
                     continue;
 
-                var certificate = await GetCertificateContentAsync(blobItem);
+
+                return await GetCertificateContentAsync(blobItem);
             }
 
             return null;
@@ -118,7 +119,7 @@ namespace certifyab.Data.Repos
                 if (!blobItem.Metadata.TryGetValue("Uuid", out var blobId) || blobId != uuid)
                     continue;
 
-                var certificate = await GetCertificateContentAsync(blobItem);
+                return await GetCertificateContentAsync(blobItem);
             }
 
             return null;
