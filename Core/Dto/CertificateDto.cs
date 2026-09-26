@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace certifyAb.Core.Dto
+namespace certifyab.Core.Dto
 {
     public class CertificateBase
     {

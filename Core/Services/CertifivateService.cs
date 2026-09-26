@@ -1,12 +1,11 @@
-using System;
 using AutoMapper;
 using certifyab.Core.Interfaces;
 using certifyab.Data.Interfaces;
 using certifyab.Data.MockData;
-using certifyAb.Core.Dto;
-using certifyAb.Data.Entities;
+using certifyab.Core.Dto;
+using certifyab.Data.Entities;
 
-namespace certifyAb.Core.Services
+namespace certifyab.Core.Services
 {
     public class CertificateService : ICertificateService
     {

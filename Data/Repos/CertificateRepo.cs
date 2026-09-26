@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using certifyab.Data.Interfaces;
-using certifyAb.Data.Entities;
+using certifyab.Data.Entities;
 
 namespace certifyab.Data.Repos
 {
@@ -53,6 +47,7 @@ namespace certifyab.Data.Repos
             var metadata = new Dictionary<string, string>
             {
                 ["Id"] = certificate.Id,
+                ["Uuid"] = certificate.Uuid,
             };
 
             var json = BinaryData.FromObjectAsJson(certificate);
@@ -82,7 +77,8 @@ namespace certifyab.Data.Repos
                 if (!blobItem.Metadata.TryGetValue("Id", out var blobId) || blobId != id)
                     continue;
 
-                var certificate = await GetCertificateContentAsync(blobItem);
+
+                return await GetCertificateContentAsync(blobItem);
             }
 
             return null;
@@ -123,7 +119,7 @@ namespace certifyab.Data.Repos
                 if (!blobItem.Metadata.TryGetValue("Uuid", out var blobId) || blobId != uuid)
                     continue;
 
-                var certificate = await GetCertificateContentAsync(blobItem);
+                return await GetCertificateContentAsync(blobItem);
             }
 
             return null;

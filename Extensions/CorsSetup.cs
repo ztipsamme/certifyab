@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace certifyAb.Extensions
+namespace certifyab.Extensions
 {
     public static class CorsSetup
     {
@@ -11,7 +6,7 @@ namespace certifyAb.Extensions
         {
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("certifyAbPolicy", policy =>
+                options.AddPolicy("certifyabPolicy", policy =>
                 {
 
                     var origins = builder.Configuration
