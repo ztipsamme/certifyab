@@ -2,7 +2,7 @@ param projectName string
 param location string = resourceGroup().location
 param storageAccountName string
 param containerRegistryName string
-param deployContainerApp bool
+
 param containerImage string = ''
 
 @secure()
@@ -57,7 +57,7 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2026-01-01'
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2026-01-01' = if (deployContainerApp) {
+resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   name: 'ca-${projectName}'
   location: location
   identity: { type: 'SystemAssigned' }
@@ -115,7 +115,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = if (deployConta
   }
 }
 
-resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployContainerApp) {
+resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(containerRegistry.id, containerApp.id, 'acrpull')
   scope: containerRegistry
   properties: {
@@ -128,7 +128,7 @@ resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (
   }
 }
 
-resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployContainerApp) {
+resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storageAccount.id, containerApp.id, 'storageblobcontributor')
 
   scope: storageAccount
