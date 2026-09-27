@@ -5,4 +5,4 @@ param storageAccountName = 'stcertifyabemma'
 param containerRegistryName = 'acrcertifyabemm'
 
 param minReplicas = 1
-param maxReplicas = 3
+param maxReplicas = 2
