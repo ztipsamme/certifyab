@@ -3,6 +3,9 @@ param location string = resourceGroup().location
 param storageAccountName string
 param containerRegistryName string
 
+param minReplicas int
+param maxReplicas int
+
 param containerImage string = ''
 
 @secure()
@@ -110,8 +113,8 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
         }
       ]
       scale: {
-        minReplicas: 2
-        maxReplicas: 3
+        minReplicas: minReplicas
+        maxReplicas: minReplicas
       }
     }
   }
