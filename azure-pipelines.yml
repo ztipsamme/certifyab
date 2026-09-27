@@ -43,3 +43,24 @@ stages:
               inlineScript: |
                 echo "Azure connection works!"
                 az account show
+
+  - stage: Docker
+    displayName: Build and Push Docker Image
+    dependsOn: AzureTest
+    condition: succeeded()
+    jobs:
+      - job: Docker
+        steps:
+          - task: AzureCLI@2
+            displayName: Build and Push Docker Image
+            inputs:
+              azureSubscription: 'CertifyAB-Azure'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az acr login --name acrcertifyabemm
+
+                IMAGE="acrcertifyabemm.azurecr.io/certifyab:$(Build.BuildId)"
+
+                docker build -t "$IMAGE" .
+                docker push "$IMAGE"
