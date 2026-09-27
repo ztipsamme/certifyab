@@ -8,6 +8,8 @@ param containerImage string = ''
 @secure()
 param apiKey string = ''
 
+param assignRoles bool = false
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
   name: storageAccountName
   location: location
@@ -115,7 +117,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   }
 }
 
-resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignRoles) {
   name: guid(containerRegistry.id, containerApp.id, 'acrpull')
   scope: containerRegistry
   properties: {
@@ -128,19 +130,15 @@ resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignRoles) {
   name: guid(storageAccount.id, containerApp.id, 'storageblobcontributor')
-
   scope: storageAccount
-
   properties: {
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
       'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
     )
-
     principalId: containerApp!.identity.principalId
-
     principalType: 'ServicePrincipal'
   }
 }
