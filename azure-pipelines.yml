@@ -88,6 +88,6 @@ stages:
                   --resource-group "RG-Emma-Spitz-a59389-DotNetCloudDeveloper-VT-Mars-Goteborg" \
                   --template-file Infra/main.bicep \
                   --parameters \
-                    Infra/main.bicepparam \
+                    Infra/main.prod.bicepparam \
                     containerImage="$IMAGE" \
                     apiKey="$(API_KEY)"
