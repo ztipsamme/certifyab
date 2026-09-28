@@ -26,3 +26,68 @@ stages:
 
           - script: dotnet test --no-build --configuration Release
             displayName: Test
+
+  - stage: AzureTest
+    displayName: Test Azure Connection
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: TestAzure
+        steps:
+          - task: AzureCLI@2
+            displayName: Test Azure connection
+            inputs:
+              azureSubscription: 'CertifyAB-Azure'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "Azure connection works!"
+                az account show
+
+  - stage: Docker
+    displayName: Build and Push Docker Image
+    dependsOn: AzureTest
+    condition: succeeded()
+    jobs:
+      - job: Docker
+        steps:
+          - task: AzureCLI@2
+            displayName: Build and Push Docker Image
+            inputs:
+              azureSubscription: 'CertifyAB-Azure'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az acr login --name acrcertifyabemm
+
+                IMAGE="acrcertifyabemm.azurecr.io/certifyab:$(Build.BuildId)"
+
+                docker build -t "$IMAGE" .
+                docker push "$IMAGE"
+
+  - stage: Infrastructure
+    displayName: Deploy Infrastructure
+    dependsOn: Docker
+    condition: succeeded()
+    jobs:
+      - job: Deploy
+        steps:
+          - task: AzureCLI@2
+            displayName: Deploy Bicep
+            inputs:
+              azureSubscription: 'CertifyAB-Azure'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                IMAGE="acrcertifyabemm.azurecr.io/certifyab:$(Build.BuildId)"
+
+                echo "Deploying image:"
+                echo "$IMAGE"
+
+                az deployment group create \
+                  --resource-group "RG-Emma-Spitz-a59389-DotNetCloudDeveloper-VT-Mars-Goteborg" \
+                  --template-file Infra/main.bicep \
+                  --parameters \
+                    Infra/main.prod.bicepparam \
+                    containerImage="$IMAGE" \
+                    apiKey="$(API_KEY)"

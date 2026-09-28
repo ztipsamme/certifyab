@@ -3,10 +3,15 @@ param location string = resourceGroup().location
 param storageAccountName string
 param containerRegistryName string
 
+param minReplicas int
+param maxReplicas int
+
 param containerImage string = ''
 
 @secure()
 param apiKey string = ''
+
+param assignRoles bool = false
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
   name: storageAccountName
@@ -40,6 +45,16 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2026-03-01' = {
   properties: {
     retentionInDays: 30
     sku: { name: 'PerGB2018' }
+  }
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: 'appi-${projectName}'
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
   }
 }
 
@@ -104,18 +119,32 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
               name: 'Storage__AccountUrl'
               value: 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
             }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: appInsights.properties.ConnectionString
+            }
           ]
         }
       ]
       scale: {
-        minReplicas: 2
-        maxReplicas: 3
+        minReplicas: minReplicas
+        maxReplicas: maxReplicas
+        rules: [
+          {
+            name: 'http-scale-rule'
+            http: {
+              metadata: {
+                concurrentRequests: '10'
+              }
+            }
+          }
+        ]
       }
     }
   }
 }
 
-resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignRoles) {
   name: guid(containerRegistry.id, containerApp.id, 'acrpull')
   scope: containerRegistry
   properties: {
@@ -128,19 +157,15 @@ resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (assignRoles) {
   name: guid(storageAccount.id, containerApp.id, 'storageblobcontributor')
-
   scope: storageAccount
-
   properties: {
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
       'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
     )
-
     principalId: containerApp!.identity.principalId
-
     principalType: 'ServicePrincipal'
   }
 }
