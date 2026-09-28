@@ -5,6 +5,7 @@ using certifyab.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddAllServicesAndRepos();
 builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.GetExecutingAssembly()));
