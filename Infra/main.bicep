@@ -48,6 +48,16 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2026-03-01' = {
   }
 }
 
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: 'appi-${projectName}'
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+  }
+}
+
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2026-01-01' = {
   name: 'cae-${projectName}'
   location: location
@@ -108,6 +118,10 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
             {
               name: 'Storage__AccountUrl'
               value: 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
+            }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: appInsights.properties.ConnectionString
             }
           ]
         }
