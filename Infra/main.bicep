@@ -8,7 +8,7 @@ param maxReplicas int
 
 param containerImage string = ''
 
-param deployAlert bool = false
+param deployAlert bool = true
 
 @secure()
 param apiKey string = ''
