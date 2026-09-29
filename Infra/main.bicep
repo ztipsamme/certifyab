@@ -71,11 +71,11 @@ resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = if (deployAle
         {
           criterionType: 'StaticThresholdCriterion'
           name: 'FailedRequests'
-          metricName: 'requests/failed'
-          metricNamespace: 'microsoft.insights/components'
+          metricName: 'FailedRequests'
+          metricNamespace: 'azure.applicationinsights'
           operator: 'GreaterThan'
           threshold: 5
-          timeAggregation: 'Count'
+          timeAggregation: 'Total'
           skipMetricValidation: true
         }
       ]
