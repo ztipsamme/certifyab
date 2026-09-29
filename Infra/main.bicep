@@ -61,29 +61,11 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
-  name: 'ag-${projectName}-errors'
-  location: location
-  properties: {
-    groupShortName: 'errAlerts'
-    enabled: true
-    emailReceivers: [
-      {
-        name: 'teamEmail'
-        emailAddress: alertEmail
-        useCommonAlertSchema: true
-      }
-    ]
-  }
-}
-
 resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = {
   name: 'alert-error-rate-${projectName}'
   location: location
   properties: {
-    actions: [
-      { actionGroupId: actionGroup.id }
-    ]
+    actions: []
     criteria: {
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
       allOf: [
