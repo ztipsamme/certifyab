@@ -11,9 +11,6 @@ param containerImage string = ''
 @secure()
 param apiKey string = ''
 
-@secure()
-param alertEmail string = ''
-
 param assignRoles bool = false
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
