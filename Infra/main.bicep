@@ -83,6 +83,8 @@ resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = if (deployAle
     description: 'Alerts on high failure rate'
     enabled: true
     evaluationFrequency: 'PT5M'
+    targetResourceType: 'Microsoft.Insights/components'
+    targetResourceRegion: location
     scopes: [
       appInsights.id
     ]
