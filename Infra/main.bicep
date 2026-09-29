@@ -76,6 +76,7 @@ resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = if (deployAle
           operator: 'GreaterThan'
           threshold: 5
           timeAggregation: 'Count'
+          skipMetricValidation: true
         }
       ]
     }
