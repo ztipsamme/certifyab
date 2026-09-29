@@ -8,7 +8,7 @@ param maxReplicas int
 
 param containerImage string = ''
 
-param deployAlert bool = false
+param deployAlert bool = true
 
 @secure()
 param apiKey string = ''
@@ -71,11 +71,11 @@ resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = if (deployAle
         {
           criterionType: 'StaticThresholdCriterion'
           name: 'FailedRequests'
-          metricName: 'requests/failed'
-          metricNamespace: 'microsoft.insights/components'
+          metricName: 'FailedRequests'
+          metricNamespace: 'azure.applicationinsights'
           operator: 'GreaterThan'
           threshold: 5
-          timeAggregation: 'Count'
+          timeAggregation: 'Total'
           skipMetricValidation: true
         }
       ]
@@ -83,6 +83,8 @@ resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = if (deployAle
     description: 'Alerts on high failure rate'
     enabled: true
     evaluationFrequency: 'PT5M'
+    targetResourceType: 'Microsoft.Insights/components'
+    targetResourceRegion: location
     scopes: [
       appInsights.id
     ]
