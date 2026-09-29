@@ -8,6 +8,8 @@ param maxReplicas int
 
 param containerImage string = ''
 
+param deployAlert bool = false
+
 @secure()
 param apiKey string = ''
 
@@ -58,7 +60,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = {
+resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = if (deployAlert) {
   name: 'alert-error-rate-${projectName}'
   location: location
   properties: {
