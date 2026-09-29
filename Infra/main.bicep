@@ -11,6 +11,9 @@ param containerImage string = ''
 @secure()
 param apiKey string = ''
 
+@secure()
+param alertEmail string = ''
+
 param assignRoles bool = false
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
@@ -55,6 +58,52 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: logAnalytics.id
+  }
+}
+
+resource scheduledQueryRule 'Microsoft.Insights/scheduledQueryRules@2026-03-01' = {
+  name: 'alert-error-rate-${projectName}'
+  location: location
+  properties: {
+    actions: {
+      actionGroups: [actionGroup.id]
+    }
+    criteria: {
+      allOf: [
+        {
+          operator: 'GreaterThan'
+          query: 'requests | summarize errorRate = 100.0 * countif(success == false) / count()'
+          threshold: 5
+          timeAggregation: 'Average'
+          failingPeriods: {
+            numberOfEvaluationPeriods: 1
+            minFailingPeriodsToAlert: 1
+          }
+        }
+      ]
+    }
+    evaluationFrequency: 'PT5M'
+    scopes: [
+      appInsights.id
+    ]
+    severity: 2
+    windowSize: 'PT15M'
+  }
+}
+
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
+  name: 'ag-${projectName}-errors'
+  location: 'global'
+  properties: {
+    groupShortName: 'errAlerts'
+    enabled: true
+    emailReceivers: [
+      {
+        name: 'teamEmail'
+        emailAddress: alertEmail
+        useCommonAlertSchema: true
+      }
+    ]
   }
 }
 
