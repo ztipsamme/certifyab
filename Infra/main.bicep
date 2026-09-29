@@ -155,6 +155,10 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
               value: 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
             }
             {
+              name: 'ApiUrl'
+              value: 'https://ca-${projectName}.${containerAppsEnvironment.properties.defaultDomain}'
+            }
+            {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
               value: appInsights.properties.ConnectionString
             }
