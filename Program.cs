@@ -1,6 +1,7 @@
 using System.Reflection;
 using certifyab.Extensions;
 using certifyab.Endpoints;
+using certifyab.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,7 @@ app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("certifyabPolicy");
+app.UseMiddleware<ErrorMetricMiddleware>();
 
 app.MapCertificateEndpoints();
 app.Run();
