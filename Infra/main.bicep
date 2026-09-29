@@ -8,11 +8,10 @@ param maxReplicas int
 
 param containerImage string = ''
 
-@secure()
-param apiKey string = ''
+param deployAlert bool = false
 
 @secure()
-param alertEmail string = ''
+param apiKey string = ''
 
 param assignRoles bool = false
 
@@ -61,49 +60,33 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource scheduledQueryRule 'Microsoft.Insights/scheduledQueryRules@2026-03-01' = {
+resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = if (deployAlert) {
   name: 'alert-error-rate-${projectName}'
   location: location
   properties: {
-    actions: {
-      actionGroups: [actionGroup.id]
-    }
+    actions: []
     criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
       allOf: [
         {
+          criterionType: 'StaticThresholdCriterion'
+          name: 'FailedRequests'
+          metricName: 'requests/failed'
+          metricNamespace: 'microsoft.insights/components'
           operator: 'GreaterThan'
-          query: 'requests | summarize errorRate = 100.0 * countif(success == false) / count()'
           threshold: 5
-          timeAggregation: 'Average'
-          failingPeriods: {
-            numberOfEvaluationPeriods: 1
-            minFailingPeriodsToAlert: 1
-          }
+          timeAggregation: 'Count'
         }
       ]
     }
+    description: 'Alerts on high failure rate'
+    enabled: true
     evaluationFrequency: 'PT5M'
     scopes: [
       appInsights.id
     ]
     severity: 2
     windowSize: 'PT15M'
-  }
-}
-
-resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
-  name: 'ag-${projectName}-errors'
-  location: 'global'
-  properties: {
-    groupShortName: 'errAlerts'
-    enabled: true
-    emailReceivers: [
-      {
-        name: 'teamEmail'
-        emailAddress: alertEmail
-        useCommonAlertSchema: true
-      }
-    ]
   }
 }
 
