@@ -91,7 +91,6 @@ stages:
                     Infra/main.prod.bicepparam \
                     containerImage="$IMAGE" \
                     apiKey="$API_KEY" \
-                    alertEmail="$ALERT_EMAIL"
+
             env:
               API_KEY: $(ApiKey)
-              ALERT_EMAIL: $(AlertEmail)
