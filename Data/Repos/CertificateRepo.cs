@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using certifyab.Data.Interfaces;
 using certifyab.Data.Entities;
+using System.Text.Json;
 
 namespace certifyab.Data.Repos
 {
@@ -111,18 +112,16 @@ namespace certifyab.Data.Repos
             if (_isDev)
                 return MockData.MockCertificates.Certificates.FirstOrDefault(c => c.Uuid == uuid);
 
-            await foreach (BlobItem blobItem in _container.GetBlobsAsync(new GetBlobsOptions
-            {
-                Traits = BlobTraits.Metadata
-            }))
-            {
-                if (!blobItem.Metadata.TryGetValue("Uuid", out var blobId) || blobId != uuid)
-                    continue;
+            var blobClient = _container.GetBlobClient($"{uuid}.json");
 
-                return await GetCertificateContentAsync(blobItem);
-            }
+            if (!await blobClient.ExistsAsync())
+                return null;
 
-            return null;
+            var response = await blobClient.DownloadContentAsync();
+
+            return JsonSerializer.Deserialize<Certificate>(
+                response.Value.Content.ToString());
+
         }
 
         private async Task<Certificate?> GetCertificateContentAsync(BlobItem blobItem)
