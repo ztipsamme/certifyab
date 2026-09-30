@@ -3,6 +3,11 @@ trigger:
     include:
       - main
 
+pr:
+  branches:
+    include:
+      - main
+
 pool:
   vmImage: ubuntu-latest
 
@@ -27,23 +32,6 @@ stages:
           - script: dotnet test --no-build --configuration Release
             displayName: Test
 
-  - stage: AzureTest
-    displayName: Test Azure Connection
-    dependsOn: Build
-    condition: succeeded()
-    jobs:
-      - job: TestAzure
-        steps:
-          - task: AzureCLI@2
-            displayName: Test Azure connection
-            inputs:
-              azureSubscription: 'CertifyAB-Azure'
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                echo "Azure connection works!"
-                az account show
-
   - stage: Docker
     displayName: Build and Push Docker Image
     dependsOn: AzureTest
@@ -58,17 +46,36 @@ stages:
               scriptType: bash
               scriptLocation: inlineScript
               inlineScript: |
-                az acr login --name acrcertifyabemm
-
                 IMAGE="acrcertifyabemm.azurecr.io/certifyab:$(Build.BuildId)"
 
+                echo "Building image:"
+                echo "$IMAGE"
+
                 docker build -t "$IMAGE" .
-                docker push "$IMAGE"
+
+                if [ "$(Build.SourceBranch)" = "refs/heads/main" ]; then
+
+                  echo "Main branch detected."
+                  echo "Pushing image to ACR..."
+
+                  az acr login --name acrcertifyabemm
+                  docker push "$IMAGE"
+
+                else
+
+                  echo "PR build detected."
+                  echo "Image will NOT be pushed to ACR."
+
+                fi
 
   - stage: Infrastructure
     displayName: Deploy Infrastructure
     dependsOn: Docker
-    condition: succeeded()
+    condition: |
+      and(
+        succeeded(),
+        eq(variables['Build.SourceBranch'], 'refs/heads/main')
+      )
     jobs:
       - job: Deploy
         steps:
