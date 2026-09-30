@@ -92,4 +92,4 @@ stages:
                     containerImage="$IMAGE" \
                     apiKey="$API_KEY"
             env:
-              API_KEY: $(ApiKey)
+              API_KEY: $(API_KEY)
