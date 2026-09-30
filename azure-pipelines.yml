@@ -34,7 +34,7 @@ stages:
 
   - stage: Docker
     displayName: Build and Push Docker Image
-    dependsOn: AzureTest
+    dependsOn: Build
     condition: succeeded()
     jobs:
       - job: Docker
