@@ -8,6 +8,8 @@ param maxReplicas int
 
 param containerImage string = ''
 
+param deployAlert bool = true
+
 @secure()
 param apiKey string = ''
 
@@ -55,6 +57,39 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: logAnalytics.id
+  }
+}
+
+resource errorAlert 'Microsoft.Insights/metricAlerts@2026-01-01' = if (deployAlert) {
+  name: 'alert-error-rate-${projectName}'
+  location: location
+  properties: {
+    actions: []
+    criteria: {
+      'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
+      allOf: [
+        {
+          criterionType: 'StaticThresholdCriterion'
+          name: 'FailedRequests'
+          metricName: 'FailedRequests'
+          metricNamespace: 'azure.applicationinsights'
+          operator: 'GreaterThan'
+          threshold: 5
+          timeAggregation: 'Total'
+          skipMetricValidation: true
+        }
+      ]
+    }
+    description: 'Alerts on high failure rate'
+    enabled: true
+    evaluationFrequency: 'PT5M'
+    targetResourceType: 'Microsoft.Insights/components'
+    targetResourceRegion: location
+    scopes: [
+      appInsights.id
+    ]
+    severity: 2
+    windowSize: 'PT15M'
   }
 }
 
@@ -118,6 +153,10 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
             {
               name: 'Storage__AccountUrl'
               value: 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
+            }
+            {
+              name: 'ApiUrl'
+              value: 'https://ca-${projectName}.${containerAppsEnvironment.properties.defaultDomain}'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'

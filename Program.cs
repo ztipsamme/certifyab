@@ -1,11 +1,14 @@
 using System.Reflection;
 using certifyab.Extensions;
 using certifyab.Endpoints;
+using certifyab.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-builder.Services.AddApplicationInsightsTelemetry();
+
+if (!builder.Environment.IsDevelopment())
+    builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddAllServicesAndRepos();
 builder.Services.AddAutoMapper(config => config.AddMaps(Assembly.GetExecutingAssembly()));
@@ -20,6 +23,9 @@ app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("certifyabPolicy");
+
+if (!builder.Environment.IsDevelopment())
+    app.UseMiddleware<ErrorMetricMiddleware>();
 
 app.MapCertificateEndpoints();
 app.Run();
