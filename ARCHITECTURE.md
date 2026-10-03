@@ -45,6 +45,6 @@ Dyrast är Container Apps eftersom vi alltid har igång två replicas för att t
 
 Container Apps inkluderar 2 miljoner requests i månaden, och blob-transaktionerna kostar någon krona. Vid ökad kundbas är inte trafiken problemet, utan att vi betalar för de replicas som körs. Med `maxReplicas: 3` och 10 samtidiga anrop per replica skalar tjänsten till som mest ~30 samtidiga anrop, och därefter köas anropen. Fyrdubblas trafiken är flaskhalsen antalet samtidiga anrop och replicas vi tillåter, det är lätt att höja.
 
-Skulle appen få 10 000 anrop på en dag är det i snitt ca 0,12 anrop per sekund, så merkostnaden är ~0 kr. Verifieringen slår upp blobben direkt på namnet i stället för att skanna alla, så latensen växer inte med antalet certifikat. HTTP-skalningsregeln hanterar en topp, och maxReplicas sätter ett tak för kostnaden. Rate limiting och caching på /verify skulle vara lämpliga skyddar mot missbruk.
+Skulle appen få 10 000 anrop på en dag är det i snitt ca 0,12 anrop per sekund, så merkostnaden är ~0 kr. Verifieringen slår upp blobben direkt på namnet i stället för att skanna alla, så latensen växer inte med antalet certifikat. HTTP-skalningsregeln hanterar en topp, och maxReplicas sätter ett tak för kostnaden. Rate limiting och caching på /verify skulle vara lämpliga skydd mot missbruk.
 
 Betalningsalternativet kan också sänka kostnaderna. När belastningen är känd rekommenderas att välja en Savings Plan istället för Pay-as-you-go för ett reducerat pris på t.ex. Container Apps.

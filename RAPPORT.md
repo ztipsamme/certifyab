@@ -141,7 +141,7 @@ Skulle appen få 10 000 anrop på en dag är det i snitt ca 0,12 anrop per sekun
 2. **Kostnadslarm** — Sätt budget-alert i Azure Cost Management vid 80 % av månadsbudget.
 3. **Rate limiting på `/verify`** — Skydda den publika endpointen mot att bli nedtyngd vid en trafiktopp.
 4. **Larmnotifiering** — Koppla felalerten till en action group så att någon faktiskt får ett meddelande när den utlöses.
-5. **Egen Domän** – Sätta deras egna domän som adress.
+5. **Egen domän** – Sätta deras egna domän som adress.
 
 ---
 
