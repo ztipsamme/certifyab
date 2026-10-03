@@ -151,13 +151,14 @@ Skulle appen få 10 000 anrop på en dag är det i snitt ca 0,12 anrop per sekun
 
 ## Överlämning
 
-| Leverabel           | Plats                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| Källkod             | https://github.com/ztipsamme/certifyab                                                 |
-| Bicep-mallar        | `Infra/` i repot                                                                       |
-| Pipeline-definition | `azure-pipelines.yml` i repots rot                                                     |
-| API-dokumentation   | https://ca-certifyab.salmonflower-d77996d7.swedencentral.azurecontainerapps.io/swagger |
-| Denna rapport       | `RAPPORT.md` i repots rot                                                              |
+| Leverabel                 | Plats                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| Källkod                   | https://github.com/ztipsamme/certifyab                                                 |
+| Bicep-mallar              | `Infra/` i repot                                                                       |
+| Pipeline-definition       | `azure-pipelines.yml` i repots rot                                                     |
+| API-dokumentation         | https://ca-certifyab.salmonflower-d77996d7.swedencentral.azurecontainerapps.io/swagger |
+| Individuella reflektioner | `Reflektioner/` i repot                                                                |
+| Denna rapport             | `RAPPORT.md` i repots rot                                                              |
 
 ---
 
