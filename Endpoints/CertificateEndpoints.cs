@@ -100,7 +100,7 @@ namespace certifyab.Endpoints
 
 
             // Health check
-            app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
+            app.MapGet("/health", () => Results.Ok(new { status = "healthy <3" }))
             .WithName("Get Health Check")
             .WithSummary("Returns a Health Check.")
             .WithTags("Health")
