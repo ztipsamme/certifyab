@@ -39,12 +39,14 @@ En molnbaserad plattform för digitala certifikat med publik verifiering. Kunden
 
 Följande punkter identifierades under uppdraget men ingår inte i denna leverans. De rekommenderas som nästa steg.
 
-| Punkt                                              | Motivering                                                                                                                                                            |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PDF-generering av certifikat                       | Kräver externa bibliotek i .NET och bedömdes inte nödvändigt för att bevisa lösningen. Certifikatdata returneras som JSON, vilket räcker för verifieringsflödet       |
-| Produktionsgodkänd autentisering för slutanvändare | Nuvarande skydd är en delad API-nyckel för admin-endpoints. Kräver Entra ID- eller nyckel-per-kund-integration inför kundlansering                                    |
-| Rate limiting på den publika `/verify`-endpointen  | Inte implementerat ännu. Relevant risk givet att certifikatlänkar är tänkta att delas publikt                                                                         |
-| Larmnotifiering                                    | Alerten på felfrekvens är aktiv men saknar mottagare, eftersom kontopolicyn i labbmiljön inte tillåter action groups. Bör kopplas till e-post eller sms i produktion. |
+| Punkt                                              | Motivering                                                                                                                                                                                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PDF-generering av certifikat                       | Kräver externa bibliotek i .NET och bedömdes inte nödvändigt för att bevisa lösningen. Certifikatdata returneras som JSON, vilket räcker för verifieringsflödet                                               |
+| Produktionsgodkänd autentisering för slutanvändare | Nuvarande skydd är en delad API-nyckel för admin-endpoints. Kräver Entra ID- eller nyckel-per-kund-integration inför kundlansering                                                                            |
+| Rate limiting på den publika `/verify`-endpointen  | Inte implementerat ännu. Relevant risk givet att certifikatlänkar är tänkta att delas publikt                                                                                                                 |
+| Larmnotifiering                                    | Alerten på felfrekvens är aktiv men saknar mottagare, eftersom kontopolicyn i labbmiljön inte tillåter action groups. Bör kopplas till e-post eller sms i produktion.                                         |
+| Felprocent-alert                                   | Alerten räknar antal misslyckade anrop (fler än 5 per 15 min) i stället för procent, eftersom policyn blockerar loggbaserade larmregler. Metrikbaserade larm i samma EU-region var det tillåtna alternativet. |
+| Egen domän                                         | Appen kör på Container Appens azurecontainerapps.io-adress istället för domänen `certify.se`                                                                                                                  |
 
 ---
 
@@ -127,9 +129,11 @@ Inga credentials lagras i källkod eller git-historik. `ApiKey` är `@secure()`-
 
 ### Skalningspunkt
 
-Container Apps är dyrast eftersom vi alltid har igång två replicas för att tjänsten ska vara pålitlig. Lagringen är billigast, filerna som lagras är väldigt små.
+Dyrast är Container Apps eftersom vi alltid har igång två replicas för att tjänsten ska vara pålitlig. Lagringen är billigast, filerna som lagras är väldigt små. Azure Monitor landar på ~0 kr eftersom loggvolymen ryms inom gratisgränsen på 5 GB per månad. Gränsen gäller per billing account och delas med övriga resurser på prenumerationen, så en liten kostnad kan uppstå om andra använder upp den.
 
 Container Apps inkluderar 2 miljoner requests i månaden, och blob-transaktionerna kostar någon krona. Vid ökad kundbas är inte trafiken problemet, utan att vi betalar för de replicas som körs. Med `maxReplicas: 3` och 10 samtidiga anrop per replica skalar tjänsten till som mest ~30 samtidiga anrop, och därefter köas anropen. Fyrdubblas trafiken är flaskhalsen antalet samtidiga anrop och replicas vi tillåter, det är lätt att höja.
+
+Skalningen verifierades med lasttestverktyget hey: 50 samtidiga anslutningar mot `/health` i 90 sekunder, ca 25 per replica och klart över tröskeln på 10. Appen skalade från 2 till 3 replicas på ungefär en minut, hanterade 177 397 anrop (ca 1 970 per sek) utan fel och skalade tillbaka till 2 ca 12 min efter testet. 50 samtidiga anrop motsvarar fem replicas, så skalningen stannade vid taket på tre. Nedskalningen är långsammare än uppskalningen för att undvika att replicas startas och stoppas i onödan vid växlande last. Testet träffade `/health`, som inte läser från lagringen, så det visar skalningsbeteendet men inte hur många verifieringar per sekund tjänsten klarar.
 
 Skulle appen få 10 000 anrop på en dag är det i snitt ca 0,12 anrop per sekund, så merkostnaden är ~0 kr. Verifieringen slår upp blobben direkt på namnet i stället för att skanna alla, så latensen växer inte med antalet certifikat. HTTP-skalningsregeln hanterar en topp, och maxReplicas sätter ett tak för kostnaden. Rate limiting och caching på /verify skulle vara lämpliga skyddar mot missbruk.
 

@@ -22,7 +22,7 @@ Idempotens betyder att en handling eller operation ger samma resultat oavsett hu
 
 ### 4. Säkerhet — Hur hanterar ni hemligheter och credentials? Vad händer om en nyckel råkar hamna i git-historiken?
 
-Hemligheter sparas inte i koden utan hanteras i secrets i Azure DevOps och skickas till deployment som `environment variables`. API-nyckeln är en pipeline-secret och exponeras inte i `azure-pipelines.yml`. Åtkomst till Azure-resurser sker även genom Azure DevOps Service Connection och Managed Identity där det är möjligt istället för hårdkodade credentials. Om en hemlighet skulle råka hamna i git-historiken är den blottad och måste bytas ut eller återkallas direkt. Att bara ta bort nyckeln från den senaste commit:en räcker inte eftersom den fortfarande kan finnas kvar i git-historiken.
+Hemligheter ligger aldrig i koden. API-nyckeln är en pipeline-secret i Azure DevOps som skickas till Bicep som `@secure()`-parameter och lagras som secret i Container Appen. Secret-variabler expanderas inte i inline-script med `$(namn)`, så vi mappar in dem via ett `env:`-block i YAML. Appen når Blob Storage och ACR via Managed Identity (RBAC), så det finns inga lagrings- eller registernycklar att läcka. Pipelinens service principal har Contributor på resursgruppen men får inte skapa role assignments (`Microsoft.Authorization/roleAssignments/write`). Därför skapade vi rolltilldelningarna för Managed Identity manuellt en gång med den egna Owner-rollen, via parametern `assignRoles` (default false) så att pipelinen inte försöker skriva dem vid varje körning. Skulle en nyckel hamna i git-historiken är den blottad och måste bytas ut eller återkallas direkt. Att bara ta bort nyckeln från den senaste commit:en räcker inte eftersom den fortfarande kan finnas kvar i git-historiken. Om service principalens nyckel skulle läcka kan någon ändra resurser i resursgruppen men inte ge sig själv fler rättigheter.
 
 ---
 
@@ -41,7 +41,7 @@ Hemligheter sparas inte i koden utan hanteras i secrets i Azure DevOps och skick
 > Betalningsmetod Pay-as-you-go. Källa: Azure Pricing Calculator.
 > 40 kunder x 99 kr = 3 960 kr/ mån. Kostnaden är ca 13 kr per kund mot 99 kr i intäkt. Vid 3x kundbas (120 kunder, 11 880 kr/mån) är kostnaden ca 4 kr per kund.
 
-Dyrast är Container Apps eftersom vi alltid har igång två replicas för att tjänsten ska vara pålitlig. Lagringen är billigast, filerna som lagras är väldigt små.
+Dyrast är Container Apps eftersom vi alltid har igång två replicas för att tjänsten ska vara pålitlig. Lagringen är billigast, filerna som lagras är väldigt små. Azure Monitor landar på ~0 kr eftersom loggvolymen ryms inom gratisgränsen på 5 GB per månad. Gränsen gäller per billing account och delas med övriga resurser på prenumerationen, så en liten kostnad kan uppstå om andra använder upp den.
 
 Container Apps inkluderar 2 miljoner requests i månaden, och blob-transaktionerna kostar någon krona. Vid ökad kundbas är inte trafiken problemet, utan att vi betalar för de replicas som körs. Med `maxReplicas: 3` och 10 samtidiga anrop per replica skalar tjänsten till som mest ~30 samtidiga anrop, och därefter köas anropen. Fyrdubblas trafiken är flaskhalsen antalet samtidiga anrop och replicas vi tillåter, det är lätt att höja.
 
